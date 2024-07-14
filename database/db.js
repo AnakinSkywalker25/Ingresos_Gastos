@@ -1,18 +1,19 @@
-const pg=require('pg'); //referenciamos al modulo para la conexión a la base de datos
-const conexion = pg.createConnection({
+const { Client } = require('pg');
+
+const conexion = new Client({
     host: 'localhost',
-    user:'postgres',
-    password:'1234',
-    database:'Ingresos',
-    port:'5432'
+    user: 'postgres',
+    password: 'minecraft',
+    database: 'ingresos',
+    port: 5432
 });
-//ejecutamos la conexión
-conexion.connect((error)=>{
-    if(error){
-        console.error('El error de conexión es:'+error);
-        return
+
+conexion.connect((error) => {
+    if (error) {
+        console.error('Error de conexión a la base de datos: ' + error);
+        return;
     }
-    console.log('Conectado la BD de forma correcta...');
+    console.log('Conectado a la base de datos correctamente');
 });
-//Exportamos la conexión para poder usarla desde la app::
-module.exports=conexion
+
+module.exports = conexion;

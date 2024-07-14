@@ -1,55 +1,61 @@
-//enlazar datos desde el formulario
-const { request } = require('express');
+const { query } = require('express');
 const conexion = require('../database/db');
-exports.save = (request, response)=>{
-    const usuario = request.body.usu_usu;
-    const nombres = request.body.nom_usu;
-    const apellidos = request.body.ape_usu;
-    const estatus = request.body.est_usu
-    //console.log(`La persona ${nombres} ${apellidos} tiene la cedula ${cedula}`);
-    conexion.query('insert into personas.usuarios set ?',{usuario:usu_usu, nombres:nom_usu, apellidos:ape_usu, estatus:est_usu}, (error,results)=>{
-        if(error){
-            console.log(error)
-        }else{
-            response.redirect('/')
+
+exports.save = (request, response) => {
+    var { usu_usu, nom_usu, ape_usu, est_usu } = request.body;
+    const query= 'INSERT INTO personas.usuarios (usu_usu, nom_usu, ape_usu, est_usu) VALUES ($1, $2, $3, $4);';
+        
+    conexion.query(query,[usu_usu,nom_usu,ape_usu,est_usu],(error, results) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log("Usuario Agregado")
+
+            response.redirect('/');
         }
-    })
-}
-//agregamos metodo update to update data that comes from the form
-exports.update = (request,response)=>{
-    const idusuario=request.body.id_usu;
-    const usuario = request.body.usu_usu;
-    const nombres = request.body.nom_usu;
-    const apellidos = request.body.ape_usu;
-    const estatus = request.body.est_usu
-    conexion.query('update personas.usuarios set ? where id_usu=?', [{usuario:usu_usu, nombres:nom_usu, apellidos:ape_usu, estatus:est_usu}, idusuario], (error,results)=>{
-        if(error){
-            console.log(error)
-        }else{
-            response.redirect('/')
-        }
-    })
-}
-//Método para eliminar
-exports.delete = (request, response)=>{
-    const idusuario = request.params.id_usu;
-    conexion.query('DELETE FROM personas.usuarios where id_usu=?', [idusuario], (error, results)=>{
-        if(error){
-            throw error;
-        }else{
-            response.redirect('/')
-        }
-    })
+    });
 };
 
-//metodo para editar
-exports.edit = (request, response)=>{
-    const idusuario = request.params.id_usu;
-    conexion.query('SELECT * FROM personas.usuarios where id_usu=?', [idusuario], (error, results)=>{
-        if(error){
-            throw error;
-        }else{
-            response.render('edit', {part:results[0]}); //envía resultados de la consulta
+exports.update = (request, response) => {
+    const id_usu = request.params.id_usu;
+    const { usu_usu, nom_usu, ape_usu, est_usu } = request.body;
+    const query=`UPDATE personas.usuarios SET usu_usu = $1, nom_usu = $2, ape_usu = $3, est_usu = $4 WHERE id_usu =${id_usu}`
+    conexion.query(query, [usu_usu, nom_usu, ape_usu, est_usu], (error, results) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log("Usuario Modificado Correctamente")
+            response.redirect('/');
         }
-    })
+    });
+};
+
+exports.delete = (request, response) => {
+    const id_usu = request.params.id_usu;
+    const query=`DELETE FROM personas.usuarios where id_usu =${id_usu}`
+    conexion.query(query, (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            console.log("Usuario eliminado correctamente")
+            response.redirect('/');
+        }
+    });
+};
+
+exports.edit = (request, response) => {
+    const id_usu = request.params.id_usu;
+    const query=`SELECT * FROM personas.usuarios WHERE id_usu = $1`
+
+    conexion.query(query, [id_usu], (error, results) => {
+        if (error) {
+            console.error(error);
+            return response.status(500).send('Error al buscar el usuario');
+        } else {
+            if (results.rows.length === 0) {
+                return response.status(404).send('Usuario no encontrado');
+            }
+            response.json(results.rows[0]);
+        }
+    });
 };
